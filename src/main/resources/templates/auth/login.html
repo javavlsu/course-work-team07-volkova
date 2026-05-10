@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<!-- NAV -->
+<nav class="navbar navbar-expand-lg bg-white border-bottom">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">
+            <img th:src="@{/images/logo.png}" width="40" height="40" class="me-2" alt="Логотип сервиса ремонта телефонов">
+            СЕРВИС РЕМОНТА ТЕЛЕФОНОВ
+        </a>
+        <ul class="navbar-nav mx-auto gap-4">
+            <li class="nav-item"><a class="nav-link" th:href="@{/catalog}">Каталог</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/contacts}">Контакты</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/reviews}">Отзывы</a></li>
+        </ul>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-dark" th:href="@{/auth/login}">Вход</a>
+            <a class="btn btn-dark" th:href="@{/auth/register}">Регистрация</a>
+        </div>
+    </div>
+</nav>
+
+<!-- LOGIN FORM -->
+<div class="container py-5">
+    <div class="bg-white p-5 rounded-4 shadow-sm mx-auto" style="max-width: 450px;">
+        <h2 class="text-center mb-4">Вход</h2>
+
+        <div th:if="${param.error}" class="alert alert-danger text-center">
+            Неверный логин или пароль
+        </div>
+
+        <form th:action="@{/auth/login}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="mb-3">
+                <label class="form-label">Логин, Email или телефон</label>
+                <input type="text"
+                    name="login"
+                    class="form-control"
+                    placeholder="Введите логин"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Пароль</label>
+                <input type="password"
+                    name="password"
+                    class="form-control"
+                    placeholder="Введите пароль"
+                    required>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-dark">
+                    Войти
+                </button>
+            </div>
+
+            <div class="text-center">
+                <span>Нет аккаунта?</span>
+                <a th:href="@{/auth/register}">Зарегистрироваться</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="border-top py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="fw-bold mb-2">
+                    <img th:src="@{/images/logo.png}" width="30" class="me-2" alt="Логотип сервиса ремонта телефонов">
+                    СЕРВИС РЕМОНТА ТЕЛЕФОНОВ
+                </div>
+                <p class="text-muted small">Быстрая диагностика, качественный ремонт и гарантия.</p>
+                <p class="text-muted small">Телефон: +7 (900) 123-45-67</p>
+                <p class="text-muted small">Email: info@phonerepair.local</p>
+                <p class="text-muted small">г. Владимир, ул. Белоконской, 3</p>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Меню</strong>
+                <ul class="list-unstyled mt-2">
+                    <li><a th:href="@{/catalog}">Каталог</a></li>
+                    <li><a th:href="@{/contacts}">Контакты</a></li>
+                    <li><a th:href="@{/reviews}">Отзывы</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <strong>Соцсети</strong>
+                <ul class="list-unstyled mt-2">
+                    <li><a href="https://telegram.org/">Telegram</a></li>
+                    <li><a href="https://vk.com">VK</a></li>
+                    <li><a href="https://max.ru">MAX</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <strong>Время работы</strong>
+                <p class="small mt-2">
+                    Пн–Пт: 09:00–20:00<br>
+                    Сб: 10:00–18:00<br>
+                    Вс: выходной
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

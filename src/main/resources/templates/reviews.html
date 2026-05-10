@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отзывы</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<!-- NAV -->
+<nav class="navbar navbar-expand-lg bg-white border-bottom">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold d-flex align-items-center"  th:href="@{/}">
+            <img th:src="@{/images/logo.png}" width="40" height="40" class="me-2" alt="Логотип сервиса ремонта телефонов">
+            <div class="d-flex flex-column lh-sm">
+                <span>СЕРВИС РЕМОНТА ТЕЛЕФОНОВ</span>
+                <small sec:authorize="hasRole('EMPLOYEE')" class="text-muted mt-1" style="font-size: 0.65rem;">РЕЖИМ СОТРУДНИКА</small>
+                <small sec:authorize="hasRole('ADMIN')" class="text-muted mt-1" style="font-size: 0.65rem;">РЕЖИМ АДМИНИСТРАТОРА</small>
+            </div>
+        </a>
+
+        <ul class="navbar-nav mx-auto gap-4">
+
+            <li class="nav-item"><a class="nav-link" th:href="@{/catalog}">Каталог</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/contacts}">Контакты</a></li>
+            <li class="nav-item"><a class="nav-link active" th:href="@{/reviews}">Отзывы</a></li>
+            <!-- клиент -->
+            <th:block sec:authorize="hasRole('CLIENT')">
+                <li class="nav-item"><a class="nav-link" th:href="@{/client/myorders}">Мои заказы</a></li>
+            </th:block>
+            <!-- сотрудник -->
+            <li class="nav-item" sec:authorize="hasRole('EMPLOYEE')">
+                <a class="nav-link" th:href="@{/employee/orders}">Управление заказами</a>
+            </li>
+            <!-- админ -->
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <a class="nav-link" th:href="@{/admin/users}">Управление пользователями</a>
+            </li>
+
+        </ul>
+
+        <!-- не авторизован -->
+        <div class="d-flex gap-2" sec:authorize="isAnonymous()">
+            <a class="btn btn-outline-dark" th:href="@{/auth/login}">Вход</a>
+            <a class="btn btn-dark" th:href="@{/auth/register}">Регистрация</a>
+        </div>
+
+        <!-- авторизован -->
+        <div class="d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
+            <a class="fw-semibold text-decoration-none"
+            th:with="principal=${#authentication.principal}"
+            th:href="@{${#authorization.expression('hasRole(''CLIENT'')') ? '/client/profile' :
+                        (#authorization.expression('hasRole(''EMPLOYEE'')') ? '/employee/dashboard' :
+                        '/admin/managepanel')}}"
+
+            th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? 'text-danger' :
+                            (${#authorization.expression('hasRole(''EMPLOYEE'')')} ? 'text-warning' :
+                            'text-primary')">
+                <span th:text="${principal.firstName + ' ' + principal.lastName}"></span>
+            </a>
+            <form th:action="@{/logout}" method="post" class="mb-0">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
+
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Выйти
+                </button>
+            </form>
+        </div>
+
+    </div>
+</nav>
+
+<div class="container py-5">
+    <!-- REVIEWS -->
+    <div class="bg-white p-5 rounded-4 shadow-sm mb-5">
+        <h2 class="fw-bold text-center mb-3 text-center">Отзывы</h2>
+        <p class="text-muted mb-4 text-center">Отзывы наших клиентов</p>
+
+        <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">Пусто.</p>
+
+        <div class="row g-4" th:if="${!#lists.isEmpty(reviews)}">
+            <!-- СОРТИРОВКА -->
+            <div class="mb-1">
+                <div class="mt-4 d-flex align-items-center gap-2">
+                    
+                    <h5 class="mb-0" th:if="${currentDir == 'asc'}">Сначала старые</h5>
+                    <h5 class="mb-0" th:if="${currentDir == 'desc'}">Сначала новые</h5>
+
+                    <a th:href="@{/reviews(sortDir=${currentDir == 'asc' ? 'desc' : 'asc'})}"
+                    class="btn btn-outline-dark btn-sm px-2 py-1">
+                        ⇅
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4" th:each="review : ${reviews}">
+                <div class="border rounded-4 p-3 text-start">
+                    <strong th:text="${review.client.firstName + ' ' + review.client.lastName}">Имя Фамилия</strong>
+                    <div class="text-muted small" th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy HH:mm')}">Дата</div>
+                    <div class="text-warning"><span th:each="i : ${#numbers.sequence(1, review.rating)}">★</span></div>
+                    <p class="text-muted mt-1" th:text="${review.comment}">Комментарий</p>
+
+                </div>
+            </div>
+
+            <th:block sec:authorize="isAnonymous()">
+                <p class="text-muted text-center">Чтобы оставить отзыв о сервисе на сайте, необходимо <a th:href="@{/auth/login}">авторизоваться</a>.</p>
+            </th:block>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center gap-2">
+            <a class="btn btn-outline-dark" th:href="@{/client/myreviews}" sec:authorize="hasRole('CLIENT')">Мои отзывы</a>
+            <a class="btn btn-dark" th:href="@{/client/createreview}" sec:authorize="isAnonymous() or hasRole('CLIENT')">Оставить отзыв</a>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="border-top py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="fw-bold mb-2">
+                    <img th:src="@{/images/logo.png}" width="30" class="me-2" alt="Логотип сервиса ремонта телефонов">
+                    СЕРВИС РЕМОНТА ТЕЛЕФОНОВ
+                </div>
+                <p class="text-muted small">Быстрая диагностика, качественный ремонт и гарантия.</p>
+                <p class="text-muted small">Телефон: +7 (900) 123-45-67</p>
+                <p class="text-muted small">Email: info@phonerepair.local</p>
+                <p class="text-muted small">г. Владимир, ул. Белоконской, 3</p>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Меню</strong>
+                <ul class="list-unstyled mt-2">
+                    <li><a th:href="@{/catalog}">Каталог</a></li>
+                    <li><a th:href="@{/contacts}">Контакты</a></li>
+                    <li><a th:href="@{/reviews}">Отзывы</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Соцсети</strong>
+                <ul class="list-unstyled mt-2">
+                    <li><a href="https://telegram.org/">Telegram</a></li>
+                    <li><a href="https://vk.com">VK</a></li>
+                    <li><a href="https://max.ru">MAX</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Время работы</strong>
+                <p class="small mt-2">
+                    Пн–Пт: 09:00–20:00<br>
+                    Сб: 10:00–18:00<br>
+                    Вс: выходной
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
