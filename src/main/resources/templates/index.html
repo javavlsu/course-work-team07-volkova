@@ -94,7 +94,7 @@
         </div>
     </div>
 
-    <!-- CATALOG -->
+    <!-- КАТАЛОГ -->
     <div class="bg-white p-5 rounded-4 shadow-sm mb-5 text-center">
         <h2 class="fw-bold mb-2">Каталог</h2>
         <p class="text-muted mb-4">Популярные марки устройств</p>
@@ -112,9 +112,7 @@
         </div>
     </div>
 
-  
-
-    <!-- WHY US -->
+    <!-- ПОЧЕМУ ВЫБИРАЮТ НАС -->
     <div class="bg-white p-5 rounded-4 shadow-sm mb-5 text-center">
         <h2 class="fw-bold">Почему выбирают нас</h2>
         <p class="text-muted mb-5">Надёжно, быстро и с гарантией</p>
@@ -149,11 +147,15 @@
 
     </div>
 
-     <!-- REVIEWS -->
+     <!-- ОТЗЫВЫ -->
     <div class="bg-white p-5 rounded-4 shadow-sm mb-5 text-center">
         <h2 class="fw-bold text-center mb-3">Отзывы</h2>
         <p class="text-muted mb-4">Отзывы наших клиентов</p>
-
+        <!-- РЕЙТИНГ -->
+        <div class="fs-1 fw-bold text-end">
+            <span th:text="${averageRating}">0</span>
+            <span class="text-warning">★</span>
+        </div>
         <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">Пусто.</p>
 
         <div class="row g-4" th:if="${!#lists.isEmpty(reviews)}">

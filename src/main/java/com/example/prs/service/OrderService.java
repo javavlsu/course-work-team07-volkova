@@ -131,8 +131,7 @@ public class OrderService {
     @Transactional
     public void changePrice(Long orderId, BigDecimal newPrice, User employee) {
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
 
         if (order.getStatus() == OrderStatus.COMPLETED ||
             order.getStatus() == OrderStatus.CANCELED) {

@@ -84,10 +84,10 @@
         <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">Пусто.</p>
 
         <div class="row g-4" th:if="${!#lists.isEmpty(reviews)}">
-            <!-- СОРТИРОВКА -->
-            <div class="mb-1">
-                <div class="mt-4 d-flex align-items-center gap-2">
-                    
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- СОРТИРОВКА -->
+                <div class="d-flex align-items-center gap-2">
+
                     <h5 class="mb-0" th:if="${currentDir == 'asc'}">Сначала старые</h5>
                     <h5 class="mb-0" th:if="${currentDir == 'desc'}">Сначала новые</h5>
 
@@ -95,6 +95,13 @@
                     class="btn btn-outline-dark btn-sm px-2 py-1">
                         ⇅
                     </a>
+
+                </div>
+
+                <!-- РЕЙТИНГ -->
+                <div class="fs-1 fw-bold ">
+                    <span th:text="${averageRating}">0</span>
+                    <span class="text-warning">★</span>
                 </div>
             </div>
 

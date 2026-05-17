@@ -22,6 +22,11 @@ public class ReviewService {
         return repo.findAllByOrderByCreatedAtDesc();
     }
 
+    // средний рейтинг
+    public double getAverageRating() {
+        return Math.round(repo.getAverageRating() * 10.0) / 10.0;
+    }
+
     // создание отзыва
     public void createReview(int rating, String comment, User client) {
 

@@ -41,8 +41,11 @@ public class ReviewsController {
             }
         }
 
+        double averageRating = reviewService.getAverageRating();
+
         model.addAttribute("reviews", reviews);
         model.addAttribute("currentDir", sortDir);
+        model.addAttribute("averageRating", averageRating);
 
         return "reviews";
     }

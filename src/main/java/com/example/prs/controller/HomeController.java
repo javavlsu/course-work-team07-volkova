@@ -5,8 +5,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.prs.service.PhoneBrandService;
-import com.example.prs.service.PhoneModelService;
-import com.example.prs.service.RepairServiceService;
 import com.example.prs.service.ReviewService;
 
 @Controller
@@ -23,8 +21,12 @@ public class HomeController {
     @GetMapping("/")
     public String index(Model model) {
 
+        double averageRating = reviewService.getAverageRating();
+
         model.addAttribute("brands", phoneBrandService.getAll().stream().limit(6).toList());
         model.addAttribute("reviews", reviewService.getAllReviews().stream().limit(6).toList());
+        
+        model.addAttribute("averageRating", averageRating);
 
         return "index";
     }

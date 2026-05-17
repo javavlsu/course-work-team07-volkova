@@ -57,10 +57,10 @@
 
         <!-- MAIN -->
         <div class="col-md-10">
-            <div class="bg-white p-5 rounded-4 shadow-sm mb-5">
+            <div class="bg-white p-4 rounded-4 shadow-sm mb-5">
                 <h2 class="text-center mb-3">Мои заказы</h2>
 
-                <p class="text-muted mb-5 text-center">Здесь хранятся все заказы, которые Вы оформляли на нашем сайте за все время.</p>
+                <p class="text-muted mb-5 text-center">Здесь хранятся все заказы, которые Вы оформляли на нашем сайте за все время</p>
 
                 <div class="row g-4" th:if="${!#lists.isEmpty(orders)}"></div>
                     <!-- ФИЛЬТР ПО СТАТУСУ -->
@@ -120,7 +120,7 @@
                     <!-- MYORDERS TABLE -->
                     <div class="table-responsive">
                         <table class="table table-hover align-middle justify-content-center">
-                            <thead class="table-light">
+                            <thead class="table-light text-center">
                             <tr>
                                 <th>№</th>
                                 <th>Контакты</th>
@@ -136,7 +136,7 @@
                             </tr>
                             </thead>
 
-                            <tbody>
+                            <tbody class="text-center">
                             <tr th:if="${#lists.isEmpty(orders)}">
                                 <td th:if="${currentStatus == 'ALL'}" colspan="11" class="text-center text-muted py-4">Вы пока не оформили ни одного заказа. <p><a th:href="@{/catalog}">Оформить заказ</a></p></td>
                                 <td th:if="${currentStatus != 'ALL'}" colspan="11" class="text-center text-muted py-4">Пусто.</td>
@@ -154,12 +154,10 @@
                                     <div th:text="${order.phoneModel.name}"></div>
                                 </td>
                                 <td th:text="${order.repairService.name}"></td>
-                                <td th:text="${order.description != null ? order.description : '-'}"></td>
+                                <td th:text="${order.description != '' ? order.description : '-'}"></td>
                                 <td th:text="${order.price + '₽'}"></td>
                                <td>
                                     <div th:if="${order.payment == null}">
-
-                                        <!-- ОФФЛАЙН -->
                                         <form th:action="@{/payment/offline/{id}(id=${order.id})}" method="post">
                                             <button class="btn btn-sm btn-secondary w-100 mb-1">
                                                 Оффлайн
@@ -194,10 +192,10 @@
                                 </td>
                                 <td>
                                     <span th:if="${order.employee != null}">
-                                        <span th:text="${order.employee.firstName}"></span><br>
+                                        <span th:text="${order.employee.firstName}"></span>
                                         <span th:text="${order.employee.lastName}"></span>
                                     </span>
-                                    <span th:if="${order.employee == null}" class="text-muted">Не назначен</span>
+                                    <span th:if="${order.employee == null}" class="text-muted fst-italic">Не назначен</span>
                                 </td>
                             </tr>
                             </tbody>
