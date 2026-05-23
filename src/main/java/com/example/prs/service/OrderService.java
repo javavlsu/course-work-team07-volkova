@@ -4,23 +4,20 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.example.prs.model.Order;
 import com.example.prs.model.RepairService;
 import com.example.prs.model.User;
 import com.example.prs.model.enums.OrderStatus;
 import com.example.prs.repository.OrderRepository;
-
 import org.springframework.context.ApplicationEventPublisher;
-
 import com.example.prs.event.OrderCanceledEvent;
 import com.example.prs.event.OrderCompletedEvent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class OrderService {
@@ -65,11 +62,6 @@ public class OrderService {
         order.setContactNumber(contactNumber);
         order.setClient(user);
         orderRepository.save(order);
-    }
-    
-    @Transactional(readOnly = true)
-    public List<Order> getOrdersForClient(User client) {
-        return orderRepository.findAllByClientOrderByCreatedAtDesc(client);
     }
 
     public long countAllOrders() {
@@ -155,16 +147,35 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-
-    public List<Order> findByEmployee(Long employeeId) {
-        return orderRepository.findByEmployeeId(employeeId);
-    }
-
-    public List<Order> findAll() {
-        return orderRepository.findAll();
-    }
-
     public Order getById(Long id) {
         return orderRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Заказ не найден: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Order> getOrdersForClient(User client, OrderStatus status,Pageable pageable) {
+
+        if (status == null) {
+            return orderRepository.findByClient(client, pageable);
+        }
+
+        return orderRepository.findByClientAndStatus(client, status,pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Order> getOrdersForEmployee(Long employeeId, Boolean onlyMine, OrderStatus status, Pageable pageable) {
+
+        if (Boolean.TRUE.equals(onlyMine) && status != null) {
+            return orderRepository.findByEmployeeIdAndStatus(employeeId, status, pageable);
+        }
+
+        if (Boolean.TRUE.equals(onlyMine)) {
+            return orderRepository.findByEmployeeId(employeeId, pageable);
+        }
+
+        if (status != null) {
+            return orderRepository.findByStatus(status, pageable);
+        }
+
+        return orderRepository.findAll(pageable);
     }
 }

@@ -90,9 +90,35 @@
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
                             </form>
-
                         </div>
                     </div>
+
+                    <nav th:if="${reviewsPage.totalPages > 1}">
+                        <ul class="pagination justify-content-center mt-4">
+                            <li class="page-item" th:classappend="${reviewsPage.first} ? 'disabled'">
+                                <a class="page-link"
+                                th:href="@{/client/myreviews(page=${reviewsPage.number - 1}, size=${reviewsPage.size}, sortDir=${currentDir})}">
+                                    ←
+                                </a>
+                            </li>
+
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(0, reviewsPage.totalPages - 1)}"
+                                th:classappend="${i == reviewsPage.number} ? 'active'">
+                                <a class="page-link"
+                                th:text="${i + 1}"
+                                th:href="@{/client/myreviews(page=${i}, size=${reviewsPage.size}, sortDir=${currentDir})}">
+                                </a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${reviewsPage.last} ? 'disabled'">
+                                <a class="page-link"
+                                th:href="@{/client/myreviews(page=${reviewsPage.number + 1}, size=${reviewsPage.size}, sortDir=${currentDir})}">
+                                    →
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
 
                 <div class="mt-4 d-flex justify-content-center gap-2">

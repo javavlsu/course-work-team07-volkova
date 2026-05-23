@@ -62,7 +62,6 @@
 
                 <p class="text-muted mb-5 text-center">Здесь хранятся все заказы, которые Вы оформляли на нашем сайте за все время</p>
 
-                <div class="row g-4" th:if="${!#lists.isEmpty(orders)}"></div>
                     <!-- ФИЛЬТР ПО СТАТУСУ -->
                     <h5 class="text-center">Фильтр по статусу</h5>
                     <div class="text-center mb-3">
@@ -114,7 +113,7 @@
                     </div>
 
                     <div class="text-muted small mt-2">
-                        Найдено: <span th:text="${orders != null ? orders.size() : 0}"></span>
+                        Найдено: <span th:text="${ordersPage.totalElements}"></span>
                     </div>
 
                     <!-- MYORDERS TABLE -->
@@ -201,6 +200,48 @@
                             </tbody>
                         </table>
                     </div>
+                    <nav th:if="${ordersPage.totalPages > 1}">
+                        <ul class="pagination justify-content-center mt-4">
+
+                            <li class="page-item" th:classappend="${ordersPage.first} ? 'disabled'">
+                                <a class="page-link"
+                                th:href="@{/client/myorders(
+                                        page=${ordersPage.number - 1},
+                                        size=${ordersPage.size},
+                                        status=${currentStatus},
+                                        sortBy=${currentSort},
+                                        sortDir=${currentDir})}">
+                                    ←
+                                </a>
+                            </li>
+
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
+                                th:classappend="${i == ordersPage.number} ? 'active'">
+                                <a class="page-link"
+                                th:text="${i + 1}"
+                                th:href="@{/client/myorders(
+                                        page=${i},
+                                        size=${ordersPage.size},
+                                        status=${currentStatus},
+                                        sortBy=${currentSort},
+                                        sortDir=${currentDir})}">
+                                </a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${ordersPage.last} ? 'disabled'">
+                                <a class="page-link"
+                                th:href="@{/client/myorders(
+                                        page=${ordersPage.number + 1},
+                                        size=${ordersPage.size},
+                                        status=${currentStatus},
+                                        sortBy=${currentSort},
+                                        sortDir=${currentDir})}">
+                                    →
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>

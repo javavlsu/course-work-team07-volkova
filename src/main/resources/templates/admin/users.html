@@ -80,7 +80,7 @@
             </div>
 
             <div class="text-muted small mt-2">
-                Найдено: <span th:text="${users != null ? users.size() : 0}"></span>
+                Найдено: <span th:text="${usersPage.totalElements}"></span>
             </div>
 
                 <!-- USERS TABLE -->
@@ -192,20 +192,21 @@
                                                                 </select>
                                                             </div>
 
-                                                            <div class="col-md-4">
-                                                                <label class="form-label">Старый пароль</label>
-                                                                <input type="password" name="oldPassword" class="form-control" autocomplete="new-password" required>
-                                                            </div>
-
-                                                            <div class="col-md-4">
+                                                            <div class="col-md-6">
                                                                 <label class="form-label">Новый пароль</label>
-                                                                <input type="password" name="newPassword" class="form-control" autocomplete="new-password">
+                                                                <input type="password" name="newPassword" class="form-control" autocomplete="new-password" placeholder="Минимум 6 символов">
                                                             </div>
 
-                                                            <div class="col-md-4">
+                                                            <div class="col-md-6">
                                                                 <label class="form-label">Подтверждение</label>
-                                                                <input type="password" name="confirmPassword" class="form-control" autocomplete="new-password">
+                                                                <input type="password" name="confirmPassword" class="form-control" autocomplete="new-password" placeholder="Повторите пароль">
                                                             </div>
+                                                        </div>
+
+                                                        <div class="px-3">
+                                                            <hr>
+                                                            <p class="text-center text-muted my-3">Чтобы продолжить, подтвердите личность администратора:</p>
+                                                            <input type="password" name="adminPassword" class="form-control" placeholder="Пароль" style="max-width: 50%; justify-self: center;" required>
                                                         </div>
                                                     </div>
 
@@ -271,6 +272,51 @@
                     </tbody>
                 </table>
             </div>
+
+            <nav th:if="${usersPage.totalPages > 1}">
+                <ul class="pagination justify-content-center mt-4">
+
+                    <li class="page-item" th:classappend="${usersPage.first} ? 'disabled'">
+                        <a class="page-link"
+                        th:href="@{/admin/users(
+                                page=${usersPage.number - 1},
+                                size=${usersPage.size},
+                                role=${currentRole},
+                                sortBy=${currentSort},
+                                sortDir=${currentDir})}">
+                            ←
+                        </a>
+                    </li>
+
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+                        th:classappend="${i == usersPage.number} ? 'active'">
+                        <a class="page-link"
+                        th:text="${i + 1}"
+                        th:href="@{/admin/users(
+                                page=${i},
+                                size=${usersPage.size},
+                                role=${currentRole},
+                                sortBy=${currentSort},
+                                sortDir=${currentDir})}">
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${usersPage.last} ? 'disabled'">
+                        <a class="page-link"
+                        th:href="@{/admin/users(
+                                page=${usersPage.number + 1},
+                                size=${usersPage.size},
+                                role=${currentRole},
+                                sortBy=${currentSort},
+                                sortDir=${currentDir})}">
+                            →
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
         </div>
     </div>
     <!-- CREATE MODAL -->

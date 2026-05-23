@@ -6,6 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.prs.model.User;
+import com.example.prs.model.enums.UserRole;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -24,5 +28,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u.role, count(u) from User u group by u.role")
     List<Object[]> countUsersByRole();
-    
+
+    Page<User> findByRole(UserRole role, Pageable pageable);
 }

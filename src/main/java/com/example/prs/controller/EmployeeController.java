@@ -5,12 +5,10 @@ import com.example.prs.model.User;
 import com.example.prs.model.enums.OrderStatus;
 import com.example.prs.service.OrderService;
 import com.example.prs.service.UserService;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/employee")
@@ -49,47 +51,38 @@ public class EmployeeController {
 
     @GetMapping("/orders")
     public String orders(
-            @RequestParam(required = false) Boolean onlyMine,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortDir,
-            Model model) {
+        @RequestParam(required = false) Boolean onlyMine, 
+        @RequestParam(defaultValue = "ALL") String status,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        Model model) {
 
         User currentUser = userService.getCurrentUser();
 
-        List<Order> orders = orderService.findAll();
+        Sort sort = sortDir.equals("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
-        // только мои
-        if (Boolean.TRUE.equals(onlyMine)) {
-            orders = orders.stream()
-                    .filter(o -> o.getEmployee() != null
-                            && o.getEmployee().getId().equals(currentUser.getId())).toList();
-        }
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        // фильтр статус
-        if (status != null && !status.equals("ALL")) {
+        OrderStatus orderStatus = null;
+
+        if (!"ALL".equals(status)) {
+
             try {
-                OrderStatus st = OrderStatus.valueOf(status);
-                orders = orders.stream().filter(o -> o.getStatus() == st).toList();
+                orderStatus = OrderStatus.valueOf(status);
             } catch (Exception ignored) {}
         }
 
-        // сортировка
-        Comparator<Order> comparator =
-                switch (sortBy) {
-                    case "price" -> Comparator.comparing(Order::getPrice);
-                    case "repairedAt" -> Comparator.comparing(o -> o.getRepairedAt() != null ? o.getRepairedAt() : o.getCreatedAt());
-                    default -> Comparator.comparing(Order::getCreatedAt);
-                };
-
-        orders = "asc".equals(sortDir)
-                ? orders.stream().sorted(comparator).toList()
-                : orders.stream().sorted(comparator.reversed()).toList();
+        Page<Order> ordersPage = orderService.getOrdersForEmployee(currentUser.getId(), onlyMine, orderStatus, pageable);
 
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("orders", orders);
+        model.addAttribute("orders", ordersPage.getContent());
+        model.addAttribute("ordersPage", ordersPage);
         model.addAttribute("onlyMine", onlyMine);
-        model.addAttribute("currentStatus", status != null ? status : "ALL");
+        model.addAttribute("currentStatus", status);
         model.addAttribute("currentSort", sortBy);
         model.addAttribute("currentDir", sortDir);
         model.addAttribute("statuses", OrderStatus.values());

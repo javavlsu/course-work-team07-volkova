@@ -3,12 +3,10 @@ package com.example.prs.service;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.example.prs.dto.RegisterDto;
 import com.example.prs.model.Order;
 import com.example.prs.model.User;
@@ -16,6 +14,8 @@ import com.example.prs.model.enums.UserRole;
 import com.example.prs.repository.OrderRepository;
 import com.example.prs.repository.UserRepository;
 import com.example.prs.security.CustomUserDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class UserService {
@@ -116,10 +116,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-
     public Map<UserRole, Long> getUserRoleCount() {
 
         return userRepository.countUsersByRole()
@@ -157,14 +153,16 @@ public class UserService {
                        String lastName,
                        String number,
                        UserRole role,
-                       String oldPassword,
                        String newPassword,
-                       String confirmPassword) {
+                       String confirmPassword, 
+                       String adminPassword) {
 
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-       
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new IllegalStateException("Неверный старый пароль");
+
+        User admin = getCurrentUser();
+
+        if (!passwordEncoder.matches(adminPassword, admin.getPassword())) {
+            throw new IllegalStateException("Неверный пароль администратора");
         }
 
         if (login == null || login.isBlank())
@@ -242,5 +240,14 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         userRepository.save(user);
+    }
+
+    public Page<User> getUsers(UserRole role, Pageable pageable) {
+
+        if (role == null) {
+            return userRepository.findAll(pageable);
+        }
+
+        return userRepository.findByRole(role, pageable);
     }
 }

@@ -6,9 +6,7 @@ import com.example.prs.model.enums.OrderStatus;
 import com.example.prs.model.enums.UserRole;
 import com.example.prs.security.CustomUserDetails;
 import com.example.prs.service.UserService;
-
 import jakarta.validation.Valid;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,11 +17,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/admin")
@@ -47,38 +48,40 @@ public class AdminController {
         return "admin/managepanel";
     }
 
-    @GetMapping("/users")
+   @GetMapping("/users")
     public String users(
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false, defaultValue = "id") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortDir,
-            Model model) {
+        @RequestParam(defaultValue = "ALL") String role,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        Model model) {
 
         User currentUser = userService.getCurrentUser();
 
-        List<User> users = userService.findAll();
+        Sort sort = sortDir.equals("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
-        // фильтр роль
-        if (role != null && !role.equals("ALL")) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        UserRole userRole = null;
+
+        if (!"ALL".equals(role)) {
+
             try {
-                UserRole r = UserRole.valueOf(role);
-
-                users = users.stream()
-                        .filter(u -> u.getRole() == r)
-                        .toList();
-
+                userRole = UserRole.valueOf(role);
             } catch (Exception ignored) {}
         }
 
+        Page<User> usersPage = userService.getUsers(userRole, pageable);
+
         List<UserRole> roles = Arrays.stream(UserRole.values()).sorted(Comparator.reverseOrder()).toList();
 
-        // сортировка по id
-        Comparator<User> comparator = Comparator.comparing(User::getId);
-        users = "asc".equals(sortDir) ? users.stream().sorted(comparator).toList() : users.stream().sorted(comparator.reversed()).toList();
-
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("users", users);
-        model.addAttribute("currentRole", role != null ? role : "ALL");
+        model.addAttribute("users", usersPage.getContent());
+        model.addAttribute("usersPage", usersPage);
+        model.addAttribute("currentRole", role);
         model.addAttribute("currentSort", sortBy);
         model.addAttribute("currentDir", sortDir);
         model.addAttribute("roles", roles);
@@ -106,14 +109,13 @@ public class AdminController {
                         @RequestParam String lastName,
                         @RequestParam String number,
                         @RequestParam UserRole role,
-                        @RequestParam String oldPassword,
                         @RequestParam(required = false) String newPassword,
                         @RequestParam(required = false) String confirmPassword,
+                        @RequestParam String adminPassword,
                         RedirectAttributes ra) {
 
         try {
-            userService.updateUser(id, login, email, firstName, lastName,
-                    number, role, oldPassword, newPassword, confirmPassword);
+            userService.updateUser(id, login, email, firstName, lastName, number, role, newPassword, confirmPassword, adminPassword);
 
             ra.addFlashAttribute("successMessage", "Данные пользователя успешно обновлены!");
         } catch (Exception e) {

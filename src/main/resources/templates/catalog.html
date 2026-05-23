@@ -134,8 +134,33 @@
                     <span th:text="${model.name}">Model</span>
                 </a>
             </div>
-
         </div>
+        <nav th:if="${modelsPage != null and modelsPage.totalPages > 1}">
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item"th:classappend="${modelsPage.first} ? 'disabled'">
+                    <a class="page-link"
+                    th:href="@{/catalog(search=${search}, page=${modelsPage.number - 1}, size=${modelsPage.size})}">
+                        ←
+                    </a>
+                </li>
+
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, modelsPage.totalPages - 1)}"
+                    th:classappend="${i == modelsPage.number} ? 'active'">
+                    <a class="page-link"
+                    th:text="${i + 1}"
+                    th:href="@{/catalog(search=${search}, page=${i}, size=${modelsPage.size})}">
+                    </a>
+                </li>
+
+                <li class="page-item" th:classappend="${modelsPage.last} ? 'disabled'">
+                    <a class="page-link"
+                    th:href="@{/catalog(search=${search}, page=${modelsPage.number + 1}, size=${modelsPage.size})}">
+                        →
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 
 

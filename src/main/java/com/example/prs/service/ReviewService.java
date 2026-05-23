@@ -4,9 +4,10 @@ import com.example.prs.model.Review;
 import com.example.prs.model.User;
 import com.example.prs.repository.ReviewRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ReviewService {
@@ -17,17 +18,14 @@ public class ReviewService {
         this.repo = repo;
     }
 
-    // все отзывы
-    public List<Review> getAllReviews() {
-        return repo.findAllByOrderByCreatedAtDesc();
+    public Page<Review> getAllReviews(Pageable pageable) {
+        return repo.findAll(pageable);
     }
 
-    // средний рейтинг
     public double getAverageRating() {
         return Math.round(repo.getAverageRating() * 10.0) / 10.0;
     }
 
-    // создание отзыва
     public void createReview(int rating, String comment, User client) {
 
         Review review = new Review();
@@ -40,13 +38,15 @@ public class ReviewService {
         repo.save(review);
     }
 
-    // мои отзывы
-    public List<Review> getReviewsByUser(User client) {
-        return repo.findAllByClientOrderByCreatedAtDesc(client);
+    public Page<Review> getReviewsByUser(User client, Pageable pageable) {
+        return repo.findAllByClient(client, pageable);
     }
 
-    // удаление отзыва
     public void deleteReview(Long id) {
         repo.deleteById(id);
+    }
+
+    public List<Review> getLatestReviews() {
+        return repo.findTop6ByOrderByCreatedAtDesc();
     }
 }

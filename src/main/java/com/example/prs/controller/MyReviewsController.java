@@ -11,10 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import com.example.prs.model.Review;
 import com.example.prs.service.ReviewService;
 import com.example.prs.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/client")
@@ -30,26 +33,22 @@ public class MyReviewsController {
     }
 
     @GetMapping("/myreviews")
-    public String myReviews(@RequestParam(required = false, defaultValue = "desc") String sortDir, Model model) {
+    public String myReviews(
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size,
+            Model model) {
 
-        List<Review> reviews = reviewService.getReviewsByUser(userService.getCurrentUser());
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by("createdAt").ascending()
+                : Sort.by("createdAt").descending();
 
-        // сортировка по дате создания
-        if (reviews != null && !reviews.isEmpty()) {
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-            Comparator<Review> comparator = Comparator.comparing(
-                    Review::getCreatedAt,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            );
+        Page<Review> reviewsPage = reviewService.getReviewsByUser(userService.getCurrentUser(), pageable);
 
-            if ("asc".equalsIgnoreCase(sortDir)) {
-                reviews.sort(comparator);
-            } else {
-                reviews.sort(comparator.reversed());
-            }
-        }
-
-        model.addAttribute("reviews", reviews);
+        model.addAttribute("reviews", reviewsPage.getContent());
+        model.addAttribute("reviewsPage", reviewsPage);
         model.addAttribute("currentDir", sortDir);
 
         return "client/myreviews";

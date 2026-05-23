@@ -4,6 +4,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.example.prs.model.PhoneModel;
 import com.example.prs.repository.PhoneModelRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class PhoneModelService {
@@ -18,7 +20,7 @@ public class PhoneModelService {
         return repo.findByPhoneBrandId(brandId);
     }
 
-    public List<PhoneModel> search(String query) {
-        return repo.findByNameContainingIgnoreCase(query);
-    } 
+    public Page<PhoneModel> search(String query, Pageable pageable) {
+        return repo.findByNameContainingIgnoreCase(query, pageable);
+    }
 }

@@ -9,10 +9,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Controller
 public class MyOrdersController {
@@ -26,53 +29,42 @@ public class MyOrdersController {
         this.userService = userService;
     }
 
-    @GetMapping("/client/myorders")
+   @GetMapping("/client/myorders")
     public String clientMyOrders(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortDir,
-            Model model) {
-        
-        List<Order> orders = orderService.getOrdersForClient(userService.getCurrentUser());
-        
-        // фильтр по статусу
-        if (status != null && !status.isEmpty() && !"ALL".equals(status)) {
+        @RequestParam(defaultValue = "ALL")String status, 
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size,
+        Model model) {
+
+        Sort sort = sortDir.equals("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        OrderStatus orderStatus = null;
+
+        if (!"ALL".equals(status)) {
+
             try {
-                OrderStatus orderStatus = OrderStatus.valueOf(status);
-                orders = orders.stream()
-                        .filter(order -> order.getStatus() == orderStatus)
-                        .collect(Collectors.toList());
-            } catch (IllegalArgumentException e) {}
-        }
-        
-        // сортировка
-        if (orders != null && !orders.isEmpty()) {
-            Comparator<Order> comparator;
-            
-            if ("repairedAt".equals(sortBy)) {
-                comparator = Comparator.comparing(
-                    order -> order.getRepairedAt() != null ? order.getRepairedAt() : order.getCreatedAt(),
-                    Comparator.nullsLast(Comparator.naturalOrder())
-                );
-            } else if ("price".equals(sortBy)) {
-                comparator = Comparator.comparing(Order::getPrice);
-            } else {
-                comparator = Comparator.comparing(Order::getCreatedAt);
-            }
-            
-            if ("asc".equals(sortDir)) {
-                orders.sort(comparator);
-            } else {
-                orders.sort(comparator.reversed());
+                orderStatus = OrderStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                orderStatus = null;
             }
         }
-        
-        model.addAttribute("orders", orders);
-        model.addAttribute("currentStatus", status != null ? status : "ALL");
+
+        Page<Order> ordersPage = orderService.getOrdersForClient(userService.getCurrentUser(), orderStatus, pageable);
+
+        model.addAttribute("orders", ordersPage.getContent());
+        model.addAttribute("ordersPage", ordersPage);
+        model.addAttribute("currentStatus", status);
         model.addAttribute("currentSort", sortBy);
         model.addAttribute("currentDir", sortDir);
         model.addAttribute("statuses", OrderStatus.values());
-        
+
         return "/client/myorders";
     }
+
 }

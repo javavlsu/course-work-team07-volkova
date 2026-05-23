@@ -24,7 +24,7 @@ public class HomeController {
         double averageRating = reviewService.getAverageRating();
 
         model.addAttribute("brands", phoneBrandService.getAll().stream().limit(6).toList());
-        model.addAttribute("reviews", reviewService.getAllReviews().stream().limit(6).toList());
+        model.addAttribute("reviews", reviewService.getLatestReviews());
         
         model.addAttribute("averageRating", averageRating);
 
